@@ -1,14 +1,6 @@
 # Hallazgos — Parte A
 
-**Grupo:** <tu número> · **Integrantes:** <tu nombre>
-
-> No borren la fila de ejemplo hasta haber comprobado que su tabla se parsea.
-> El formato es rígido: siete columnas, en este orden. Una tabla torcida se
-> rechaza indicando la línea, no se «entiende igual».
->
-> **Tuberías dentro de una celda:** si su comando lleva `|` —y varios lo llevarán,
-> por `grep`, `head` o `jq`— escríbanlo `\|`. Sin escapar, Markdown lo lee como
-> separador de columna y su fila pasa a tener ocho.
+**Grupo:** < DA8A> · **Integrantes:** < Luna Pico>, < Nicole López>
 
 | ID | Síntoma observable | Causa | Módulo · Sección | SHA donde se observa | Comando de evidencia | Salida obtenida | Corrección aplicada |
 |----|--------------------|-------|-------------------|-----------------------|------------------------|--------------------|------------------------|
