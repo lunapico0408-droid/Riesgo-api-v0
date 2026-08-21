@@ -6,12 +6,24 @@ import pickle
 import time
 from pathlib import Path
 
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Response
 
 import config
 from dominio import EvaluadorRiesgo, buscar_siniestro, cargar_siniestros
 
 BASE = Path(__file__).parent
+modelo_cache = {}
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    with open(BASE / config.RUTA_MODELO, "rb") as fh:
+        modelo_cache["modelo"] = pickle.load(fh)
+    yield
+    modelo_cache.clear()
+
 app = FastAPI(title="Riesgo API", version="0.1.0")
 
 
@@ -25,10 +37,10 @@ async def score(payload: dict):
     if payload.get("antiguedad", 0) < 0:
         return {"error": "la antigüedad no puede ser negativa"}
 
-    with open(BASE / config.RUTA_MODELO, "rb") as fh:
-        modelo = pickle.load(fh)
+        modelo = modelo_cache["modelo"]
 
     evaluador = EvaluadorRiesgo(payload["poliza"])
+
     puntaje = evaluador.puntuar(modelo, payload)
     evaluador.anotar(puntaje)
 
