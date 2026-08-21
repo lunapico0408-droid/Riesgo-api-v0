@@ -64,6 +64,9 @@ async def exportar():
 async def ping():
     return {"pong": True}
 
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
 
 @app.get("/consulta-archivo")
 async def consulta_archivo():
