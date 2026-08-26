@@ -5,10 +5,18 @@ Recibe los datos de una póliza y devuelve la probabilidad de que el siniestro
 declarado termine en un pago alto.
 
 ## Instalación
-
-```bash
+​```bash
+python -m venv venv
+.\venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-```
+​```
+
+Crea un archivo `.env` en la raíz del proyecto con las claves necesarias:
+
+​```
+API_KEY=sk-riesgo-2026-9f3a1c7b4e21
+CLAVE_FIRMA=aseguradora-santo-tomas-2026
+​```
 
 El modelo entrenado (`modelo.pkl`) viene en el repositorio.
 
@@ -51,6 +59,5 @@ curl -X POST localhost:8000/score \
 ```
 
 ## Notas
-
-- La clave de la API está en `config.py` para que el equipo pueda probar sin configurar nada.
-- El histórico se exporta con `pickle`, que conserva los tipos de Python tal cual.
+- Las claves de la API viven en variables de entorno (`.env`), no en el código — ver sección de Instalación.
+- El histórico se exporta en JSON nativo.
