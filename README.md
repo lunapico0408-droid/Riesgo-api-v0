@@ -5,11 +5,11 @@ Recibe los datos de una póliza y devuelve la probabilidad de que el siniestro
 declarado termine en un pago alto.
 
 ## Instalación
-​```bash
+```​bash
 python -m venv venv
 .\venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-​```
+```
 
 Crea un archivo `.env` en la raíz del proyecto con las claves necesarias:
 
