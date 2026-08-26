@@ -18,10 +18,22 @@ modelo_cache = {}
 repositorio_historial = RepositorioHistorial()
 
 
+def obtener_modelo():
+    """Devuelve el modelo cargado, cargándolo si aún no está en caché.
+
+    En producción, lifespan lo carga una sola vez al iniciar el servidor.
+    Este resguardo cubre además el caso de pruebas que instancian el
+    TestClient sin activar el ciclo de vida (sin usar `with`).
+    """
+    if "modelo" not in modelo_cache:
+        with open(BASE / config.RUTA_MODELO, "rb") as fh:
+            modelo_cache["modelo"] = pickle.load(fh)
+    return modelo_cache["modelo"]
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    with open(BASE / config.RUTA_MODELO, "rb") as fh:
-        modelo_cache["modelo"] = pickle.load(fh)
+    obtener_modelo()
     yield
     modelo_cache.clear()
 
@@ -53,7 +65,7 @@ class ScoreResponse(BaseModel):
 
 @app.post("/score", response_model=ScoreResponse)
 async def score(payload: ScorePayload):
-    modelo = modelo_cache["modelo"]
+    modelo = obtener_modelo()
     evaluador = EvaluadorRiesgo(payload.poliza, repositorio=repositorio_historial)
     puntaje = evaluador.puntuar(modelo, payload.model_dump())
     evaluador.anotar(puntaje)
