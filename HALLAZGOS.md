@@ -17,14 +17,13 @@
 ## Parte C
 
 ### `/ping`
-*(pendiente: clasificación + decisión + interpretación de los tiempos obtenidos)*
+Trivial: solo devuelve una constante, sin I/O ni cómputo. Declarado como `async def`, correcto. A concurrencia 1 responde en 1.1ms (p50); a concurrencia 20 el p50 se mantiene en 2.1ms pero el p95 sube a 2054ms — unos pocos casos atípicos, probablemente overhead del sistema al abrir 20 conexiones simultáneas, no un problema del código.
 
 ### `/consulta-archivo`
-*(pendiente: clasificación + decisión + interpretación de los tiempos obtenidos)*
+IO-bound (lee un archivo del disco), pero declarado con `.read_text()` bloqueante dentro de `async def` — en teoría, un error. Sin embargo, medido da prácticamente lo mismo que `/ping` (0.112s vs 0.072s en concurrencia 1; 2.084s vs 2.065s en concurrencia 20): el archivo es tan pequeño que bloquear el event loop por microsegundos no se nota. Decidimos no complicarlo con un executor: el overhead de mover la lectura a otro hilo probablemente sería peor que el bloqueo mínimo actual. Este es el caso donde el código incumple la regla "I/O va con async" y la medición dice que da igual.
 
 ### `/servicio-externo`
-*(pendiente: clasificación + decisión + interpretación de los tiempos obtenidos)*
+IO-bound (simula una llamada HTTP externa con espera). Originalmente usaba `time.sleep(0.3)` bloqueante dentro de `async def` — el tiempo total a concurrencia 20 era 15.123s, casi igual que a concurrencia 1 (15.154s), señal de que las peticiones se servían en fila, no en paralelo. Corregido a `await asyncio.sleep(0.3)`, el tiempo a concurrencia 20 bajó a 2.991s: mejora de 5x, porque ahora el event loop sí puede atender otras peticiones mientras cada una espera.
 
 ### `/calculo-pesado`
-*(pendiente: clasificación + decisión + interpretación de los tiempos obtenidos)*
-
+CPU-bound (bucle numérico intensivo, sin I/O). Cambiamos el handler de `async def` a `def` normal, para que FastAPI lo despache a un threadpool en vez de bloquear el event loop. Sin embargo, el tiempo a concurrencia 20 no mejoró (13.503s antes vs 13.460s después): el GIL de Python impide que un threadpool paralelice cómputo puro entre hilos. La corrección sigue siendo la decisión correcta para no bloquear otros endpoints mientras este corre, pero no acelera este endpoint en sí — para eso haría falta paralelismo real con procesos.

@@ -4,6 +4,7 @@ Aseguradora Santo Tomás · prototipo interno.
 """
 import pickle
 import time
+import asyncio
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -115,12 +116,12 @@ async def consulta_archivo():
 
 @app.get("/servicio-externo")
 async def servicio_externo():
-    time.sleep(0.3)
+    await asyncio.sleep(0.3)
     return {"tarifa_referencia": 1.18}
 
 
 @app.get("/calculo-pesado")
-async def calculo_pesado():
+def calculo_pesado():
     total = 0.0
     for i in range(3_000_000):
         total += (i % 7) ** 0.5
