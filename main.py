@@ -70,7 +70,7 @@ async def siniestro(id_siniestro: int):
 @app.get("/exportar")
 async def exportar():
     datos = cargar_siniestros()
-    return Response(pickle.dumps(datos), media_type="application/octet-stream")
+    return datos
 
 
 # --- Endpoints de perfil de carga -----------------------------------------
