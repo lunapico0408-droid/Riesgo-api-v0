@@ -4,20 +4,19 @@ Aseguradora Santo Tomás · prototipo interno.
 """
 import pickle
 import time
+from contextlib import asynccontextmanager
 from pathlib import Path
 
-from contextlib import asynccontextmanager
-
-from fastapi import FastAPI, Response
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel, Field, field_validator
 
 import config
 from dominio import EvaluadorRiesgo, RepositorioHistorial, buscar_siniestro, cargar_siniestros
 
 BASE = Path(__file__).parent
 modelo_cache = {}
-BASE = Path(__file__).parent
-modelo_cache = {}
 repositorio_historial = RepositorioHistorial()
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -26,32 +25,43 @@ async def lifespan(app: FastAPI):
     yield
     modelo_cache.clear()
 
-app = FastAPI(title="Riesgo API", version="0.1.0")
-
 
 app = FastAPI(title="Riesgo API", version="0.1.0", lifespan=lifespan)
 
 
-@app.post("/score")
-async def score(payload: dict):
-    if "poliza" not in payload:
-        return {"error": "falta el campo poliza"}
-    assert payload["monto"] > 0, "el monto debe ser positivo"
-    if payload.get("antiguedad", 0) < 0:
-        return {"error": "la antigüedad no puede ser negativa"}
+class ScorePayload(BaseModel):
+    """Datos de entrada para puntuar una póliza."""
 
+    poliza: str = Field(..., min_length=1, description="Identificador de la póliza")
+    monto: float = Field(..., gt=0, description="Monto asegurado, debe ser positivo")
+    antiguedad: int = Field(..., ge=0, description="Antigüedad de la póliza en años")
+    siniestros_previos: int = Field(..., ge=0, description="Número de siniestros previos")
+
+    @field_validator("poliza")
+    @classmethod
+    def poliza_no_vacia(cls, v: str) -> str:
+        if not v.strip():
+            raise ValueError("la póliza no puede estar vacía ni contener solo espacios")
+        return v
+
+
+class ScoreResponse(BaseModel):
+    poliza: str
+    puntaje: float
+    alto_riesgo: bool
+
+
+@app.post("/score", response_model=ScoreResponse)
+async def score(payload: ScorePayload):
     modelo = modelo_cache["modelo"]
-
-    evaluador = EvaluadorRiesgo(payload["poliza"], repositorio=repositorio_historial)
-
-    puntaje = evaluador.puntuar(modelo, payload)
+    evaluador = EvaluadorRiesgo(payload.poliza, repositorio=repositorio_historial)
+    puntaje = evaluador.puntuar(modelo, payload.model_dump())
     evaluador.anotar(puntaje)
-
-    return {
-        "poliza": payload["poliza"],
-        "puntaje": puntaje,
-        "alto_riesgo": evaluador.es_alto_riesgo(puntaje),
-    }
+    return ScoreResponse(
+        poliza=payload.poliza,
+        puntaje=puntaje,
+        alto_riesgo=evaluador.es_alto_riesgo(puntaje),
+    )
 
 
 @app.get("/historial")
@@ -63,7 +73,7 @@ async def historial():
 async def siniestro(id_siniestro: int):
     fila = buscar_siniestro(id_siniestro)
     if fila is None:
-        return {"error": f"no existe el siniestro {id_siniestro}"}
+        raise HTTPException(status_code=404, detail=f"no existe el siniestro {id_siniestro}")
     return fila
 
 
@@ -79,9 +89,11 @@ async def exportar():
 async def ping():
     return {"pong": True}
 
+
 @app.get("/health")
 async def health():
     return {"status": "ok"}
+
 
 @app.get("/consulta-archivo")
 async def consulta_archivo():
