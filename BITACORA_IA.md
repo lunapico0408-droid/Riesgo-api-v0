@@ -1,7 +1,7 @@
 # Bitácora de uso de IA
 
 **Grupo:** DA8A · **Integrantes:** Luna Pico, Nicole López
-**Herramientas usadas:** Claude, ChatGPT, Qwen
+**Herramientas usadas:** Claude, ChatGPT
 
 ## Prompts
 
