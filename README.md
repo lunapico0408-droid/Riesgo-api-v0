@@ -37,8 +37,15 @@ Instala las dependencias:
 pip install -r requirements.txt
 ```
 
-Crea un archivo `.env` en la raíz del proyecto con las claves necesarias. Puedes hacerlo con cualquier editor de texto, o directamente desde la terminal:
+Crea un archivo `.env` en la raíz del proyecto con las claves necesarias. Puedes hacerlo con cualquier editor de texto, o directamente desde la terminal.
 
+**En PowerShell (Windows):**
+```powershell
+'API_KEY=sk-riesgo-2026-9f3a1c7b4e21' | Out-File -Encoding ascii .env
+'CLAVE_FIRMA=aseguradora-santo-tomas-2026' | Add-Content -Encoding ascii .env
+```
+
+**En Bash/Linux/Mac:**
 ```bash
 echo "API_KEY=sk-riesgo-2026-9f3a1c7b4e21" > .env
 echo "CLAVE_FIRMA=aseguradora-santo-tomas-2026" >> .env
