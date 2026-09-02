@@ -4,18 +4,51 @@ Servicio de puntuación de siniestros de la Aseguradora Santo Tomás.
 Recibe los datos de una póliza y devuelve la probabilidad de que el siniestro
 declarado termine en un pago alto.
 
+## Requisitos previos
+
+- Python 3.10 o superior
+- Git
+
 ## Instalación
+
+Clona el repositorio y entra a la carpeta:
+
+```bash
+git clone https://github.com/lunapico0408-droid/Riesgo-api-v0.git
+cd Riesgo-api-v0
+```
+
+Crea y activa un entorno virtual:
 
 ```bash
 python -m venv venv
 .\venv\Scripts\Activate.ps1
+```
+
+En Windows, si PowerShell bloquea la activación con un error de "ejecución de scripts deshabilitada", corre esto una sola vez y confirma con `S`:
+
+```bash
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+```
+
+Instala las dependencias:
+
+```bash
 pip install -r requirements.txt
 ```
 
-Crea un archivo `.env` en la raíz del proyecto con las claves necesarias:
+Crea un archivo `.env` en la raíz del proyecto con las claves necesarias. Puedes hacerlo con cualquier editor de texto, o directamente desde la terminal:
+
+```bash
+echo "API_KEY=sk-riesgo-2026-9f3a1c7b4e21" > .env
+echo "CLAVE_FIRMA=aseguradora-santo-tomas-2026" >> .env
+```
+
+El archivo debe quedar así:
+```
 API_KEY=sk-riesgo-2026-9f3a1c7b4e21
 CLAVE_FIRMA=aseguradora-santo-tomas-2026
-
+```
 
 El modelo entrenado (`modelo.pkl`) viene en el repositorio.
 
