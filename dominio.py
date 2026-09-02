@@ -50,9 +50,17 @@ class EvaluadorRiesgo:
         return puntaje is not None and puntaje > self.umbral
 
 
+_siniestros_cache = None
+
+
 def cargar_siniestros():
-    with open(BASE / config.RUTA_DATOS, encoding="utf-8") as fh:
-        return list(csv.DictReader(fh))
+    """Carga el CSV desde disco solo la primera vez; las siguientes
+    llamadas reutilizan lo que ya está en memoria."""
+    global _siniestros_cache
+    if _siniestros_cache is None:
+        with open(BASE / config.RUTA_DATOS, encoding="utf-8") as fh:
+            _siniestros_cache = list(csv.DictReader(fh))
+    return _siniestros_cache
 
 
 def buscar_siniestro(id_siniestro):
